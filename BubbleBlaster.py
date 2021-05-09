@@ -5,6 +5,9 @@ from random import randint
 # Imports the randint function from random library - needed for bubble generation
 from time import sleep, time
 # Imports the sleep function from the time library, needed to slow the game down a bit.
+from math import sqrt
+# Imports the sqrt (square root) function from the math library -
+# needed to sense collisions with bubbles.
 # import playsound
 # Imports playsound for SFX
 HEIGHT = 500
@@ -121,16 +124,67 @@ def clean_up_bubs():
     if x < -GAP:
       del_bubble(i)
       # Deletes the bubble
+def distance(id1, id2):
+  # Function to find out the distance between id1 and id2
+  x1, y1 = get_coords(id1)
+  x2, y2 = get_coords(id2)
+  # Finds out the coords of id1 and id2, putting the x and y coords into variables.
+  return sqrt((x2 - x1)**2 + (y2 - y1)**2)
+  # Returns the distance between id1 and id2
+def collision():
+  # This function is called when the sub collides with a bubble
+  points = 0
+  # The variable keeps track of the score
+  for bub in range(len(bub_id)-1, -1, -1):
+    # Goes through the list backwards as if it goes forwards, this function
+    # will try to delete bubble which don't exist.
+    if distance(ship_id, bub_id[bub]) < (SHIP_R + bub_r[bub]):
+      # If the distance between a bubble and the sub is less than the radius of the bubble and the sub:
+      points += (bub_r[bub] + bub_speed[bub])
+      # Adds points - more points for faster bubbles/bigger bubbles
+      del_bubble(bub)
+  return points
+  # Gives back the number of points.
+ocean.create_text(50, 30, text="TIME", fill="white")
+ocean.create_text(150, 30, text="SCORE", fill="white")
+# Creates text labels on the canvas -> these are static and don't need to be manipulated.
+time_text = ocean.create_text(50, 50, fill="white")
+score_text = ocean.create_text(150, 50, fill="white")
+# Creates text on the canvas that changes according to the time left and score.
+def show_score(score):
+  # Function to update the score text
+  ocean.itemconfig(score_text, text=str(score))
+def show_time(time_left):
+  # Function to update the time left on the screen
+  ocean.itemconfig(time_text, text=str(time_left))
 
+score = 0
 # MAIN GAME LOOP
-BUB_CHANCE = 10
-# The chance of a bubble being generated (1/10)
-while True:
+BUB_CHANCE = 10000
+# The chance of a bubble being generated (1/10000)
+TIME_LIMIT = 30
+# The time limit is 30 seconds
+BONUS_SCORE = 1000000
+# The score needed to earn bonus time is 1000000
+bonus = 0
+# ???
+end = time() + TIME_LIMIT
+# Sets the time when the time limit ends
+while time() < end:
   if randint(1, BUB_CHANCE) == 1:
     create_bubble()
     move_bubbles()
     clean_up_bubs()
+    score += collision()
+    # Adds to the score if needed
+    if (int(score / BONUS_SCORE)) > bonus:
+      # Checks if the score exceeds the bonus score
+      bonus += 1
+      # Adds one to the earned bonus time
+      end += TIME_LIMIT
+      # Increases time left
+    show_score(score)
+    show_time(int(end - time()))
     window.update()
-    # Updates the window to redraw the bubbles as they have moved.
-    sleep(0.01)
+    # Updates the window to redraw the bubbles as they have moved.    sleep(0.01)
 window.mainloop()
