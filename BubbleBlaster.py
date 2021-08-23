@@ -12,9 +12,6 @@ from math import sqrt
 # Imports the sqrt (square root) function from the math library -
 # needed to sense collisions with bubbles.
 
-# import playsound
-# Imports playsound for SFX
-
 HEIGHT = 500
 WIDTH = 800
 # These variables will be used to set the height and width of the window, but also to calculate
@@ -40,6 +37,11 @@ ship_id = ocean.create_oval(0, 0, 30, 30, outline="red")
 ship_id2 = ocean.create_polygon(5, 5, 5, 25, 30, 15, fill="red")
 # Puts these canvas-drawn shapes into variables.  These make up the submarine.
 
+shipPresent = True
+# Needed to check whether the ship actually exists as once it is deleted
+# at the end of the game, NameError is raised -> the ship techinically doesn't
+# exist anymore.
+
 SHIP_R = 15
 # This variable is used for the bubble collision events
 
@@ -58,25 +60,30 @@ def move_ship(event):
   # Defines an event
 
   if event.keysym == 'Up' or event.keysym == 'w':
-    # When the up arrow/W key is pressed...
-    ocean.move(ship_id, 0, -SHIP_SPD)
-    ocean.move(ship_id2, 0, -SHIP_SPD)
-    # Moves the sub up.
+    if ocean.coords(ship_id)[1] > 0:
+      # When the up arrow/W key is pressed...
+      ocean.move(ship_id, 0, -SHIP_SPD)
+      ocean.move(ship_id2, 0, -SHIP_SPD)
+      # Moves the sub up.
   
   elif event.keysym == 'Down' or event.keysym == 's':
-    ocean.move(ship_id, 0, SHIP_SPD)
-    ocean.move(ship_id2, 0, SHIP_SPD)
+    if ocean.coords(ship_id)[1] < 470:
+      ocean.move(ship_id, 0, SHIP_SPD)
+      ocean.move(ship_id2, 0, SHIP_SPD)
   
   elif event.keysym == 'Left' or event.keysym == 'a':
-    ocean.move(ship_id, -SHIP_SPD, 0)
-    ocean.move(ship_id2, -SHIP_SPD, 0)
+    if ocean.coords(ship_id)[0] > 0:
+     ocean.move(ship_id, -SHIP_SPD, 0)
+     ocean.move(ship_id2, -SHIP_SPD, 0)
 
   elif event.keysym == 'Right' or event.keysym == 'd':
-    ocean.move(ship_id, SHIP_SPD, 0)
-    ocean.move(ship_id2, SHIP_SPD, 0)
+    if ocean.coords(ship_id)[0] < 800:
+      ocean.move(ship_id, SHIP_SPD, 0)
+      ocean.move(ship_id2, SHIP_SPD, 0)
 
 ocean.bind_all('<Key>', move_ship)
 # Binds the events to the respective keys
+
 
 bub_id = list()
 # Stores a uniques ID number assigned to each bubble so it can be manipulated later
@@ -265,5 +272,23 @@ while time() < end:
     show_time(int(end - time()))
     window.update()
     # Updates the window to redraw the bubbles as they have moved.
-    
     sleep(0.01)
+
+for bub in range(len(bub_id)-1, -1, -1):
+  del_bubble(bub)
+# Removes all the bubbles on the screen
+
+ocean.unbind_all("<Key>")
+# Unbinds the move_ship event (still trying to get it to work)
+
+ocean.delete(ship_id)
+ocean.delete(ship_id2)
+del ship_id
+del ship_id2
+# Deletes the sub
+
+ocean.create_text(MID_X, MID_Y ,text="GAME OVER!!!", fill="white")
+# Creates the game over message on the screen
+
+window.mainloop()
+# 
