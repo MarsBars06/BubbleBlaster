@@ -208,7 +208,15 @@ def collision():
 
       points += (bub_r[bub] + bub_speed[bub])
       # Adds points - more points for faster bubbles/bigger bubbles
-
+      
+      x0, y0, x1, y1 = ocean.coords(bub_id[bub])
+      
+      bub_rad = bub_r[bub]/2
+      
+      
+      
+      ocean.coords(bub_id[bub], x0-bub_rad, y0-bub_rad, x1+bub_rad, y1+bub_rad)
+      
       del_bubble(bub)
   return points
   # Gives back the number of points.
